@@ -1,0 +1,123 @@
+# import os
+# import jsonlines
+# import numpy as np
+# import pandas as pd
+# from pick import pick
+#
+#
+# def read_excel(filename):
+#     data = pd.read_excel(f'data/{filename}')
+#     return data
+#
+#
+# def input_condition():
+#     title = 'Выберите метод разделения файла'
+#     options = [
+#         'Разделить по количеству строк',
+#         'Разделить на части',
+#     ]
+#     option, index = pick(options, title)
+#     return option
+#
+#
+# def split_data(data, method):
+#     if method == 'Разделить по количеству строк':
+#         quantity_lines = int(input('Введите количество строк на которое разделить data_set - '))
+#         quantity_lines_parts = [data.iloc[i:i + quantity_lines]
+#                                 for i in range(0, len(data), quantity_lines)]
+#
+#         return quantity_lines_parts
+#     elif method == 'Разделить на части':
+#         quantity_part = int(input('Введите количество частей на которое разделить data_set - '))
+#         # quantity_part_parts = len(data) // quantity_part
+#         quantity_part_parts = np.array_split(data, quantity_part)
+#         return quantity_part_parts
+#
+#
+# def save_data(part_data, file_name, original, save_format):
+#     folder = 'out'
+#     os.makedirs(folder, exist_ok=True)
+#     for i, part in enumerate(part_data):
+#         part.to_excel(f'{folder}/{file_name}_part{i + 1}.{save_format}', index=False)
+#
+#     for save_format=='xlsx':
+#         original.to_excel(f'{folder}/{file_name}_format.{save_format}', index=False, engine='xlsxwriter')
+#     elif save_format=='json':
+#         original.to_json(f'{folder}/{file_name}_format.{save_format}', orient='records', lines=True)
+#     elif save_format =='csv':
+#         original.to_csv(f'{folder}/{file_name}_format.{save_format}', index=False)
+#
+#     print('Сохранено')
+#
+#
+# if __name__ == '__main__':
+#     file_name = input('Введите имя файла\n')
+#     data = read_excel(file_name)
+#     method = input_condition()
+#     sliced_data = split_data(data, method)
+#     save_format_title = 'Выберите формат сохранения'
+#     save_format_options=['xlsx','json','csv']
+#     save_format, index= pick(save_format_options, save_format_title)
+#     save_data(sliced_data, file_name,data,save_format)
+
+import os
+import numpy as np
+import pandas as pd
+from pick import pick
+
+
+
+import os
+import pandas as pd
+import numpy as np
+from pick import pick
+
+def read_excel(filename):
+    data = pd.read_excel(f'data/{filename}')
+    return data
+
+def select_file():
+    files = []
+    for i, filename in enumerate(os.listdir('data')):
+        if filename.endswith('.xlsx'):
+            files.append((i + 1, filename)) # Исправлено: добавляем кортеж (индекс, имя файла)
+    if not files:
+        raise ValueError("В папке 'data' нет файлов с расширением .xlsx")
+    title = 'Выберите файл для обработки'
+    options = [f[1] for f in files]
+    option, index = pick(options, title)
+    return option
+
+def input_condition():
+    title = 'Выберите метод разделения файла'
+    options = [
+    'Разделить по количеству строк',
+    'Разделить на части',
+    ]
+    option, index = pick(options, title)
+    return option
+
+def split_data(data, method):
+    if method == 'Разделить по количеству строк':
+        quantity_lines = int(input('Введите количество строк на которое разделить data_set - '))
+        quantity_lines_parts = [data.iloc[i:i + quantity_lines]
+    for i in range(0, len(data), quantity_lines)]
+        return quantity_lines_parts
+    elif method == 'Разделить на части':
+        quantity_part = int(input('Введите количество частей на которое разделить data_set - '))
+        quantity_part_parts = np.array_split(data, quantity_part)
+        return quantity_part_parts
+
+def save_data(part_data, file_name):
+    folder = 'out'
+    os.makedirs(folder, exist_ok=True)
+    for i, part in enumerate(part_data):
+        part.to_excel(f'{folder}/{file_name}_part{i + 1}.xlsx', index=False)
+    print('Сохранено')
+
+if __name__ == '__main__':
+    selected_file = select_file()
+    data = read_excel(selected_file)
+    method = input_condition()
+    sliced_data = split_data(data, method)
+    save_data(sliced_data, os.path.splitext(selected_file)[0])
